@@ -8,13 +8,13 @@ typedef struct {
     int y;
 } Point;
 
-typedef char string[];
+typedef char[] string; // 1 что должно найти
 
-void print_point(Point p);
+void print_point(Point p); // 2
 
-int add(int x, int y);
+int add(int x, int y); // 3
 
-#define PI 3.14159
+#define PI 3.14159 // 4 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #endif
