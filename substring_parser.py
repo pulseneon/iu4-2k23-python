@@ -4,76 +4,109 @@ from string_to_dataclass import SubstringData
 class CParser:
     def __init__(self):
         self.function_type_specifier = ['void',
-                               'char',
-                               'short',
-                               'int',
-                               'long',
-                               'long long',
-                               'float',
-                               'double',
-                               'long double',
-                               'signed',
-                               'unsigned']
-        
+                                        'char',
+                                        'short',
+                                        'int',
+                                        'long',
+                                        'long long',
+                                        'float',
+                                        'double',
+                                        'long double',
+                                        'signed',
+                                        'unsigned']
+
+        self.lines_to_skip = ['#ifndef', '#include', '#endif']
+        self.index = 0
+        self.list_length = 0
+        self.substring_data = []
         self.parsed_list = []
 
     def parse_from_string_list(self, substring_data: list[SubstringData]):
-        for data in substring_data:
-            if data.substring.startswith('#define'):
-                self.parse_define(data)
-            elif data.substring.startswith('typedef'):
-                self.parse_typedef(data)
-            for specifier in self.function_type_specifier:
-                if data.substring.startswith(specifier):
-                    self.parse_function(data, specifier)
-                    break
+        self.substring_data = substring_data
+        self.merge_brackets_to_one_line()
+
+        while self.index < self.list_length:
+            current_substring = self.substring_data[self.index]
+            self.index += 1
+            if current_substring.substring == '' or current_substring.substring.split()[0] in self.lines_to_skip:
+                continue
+            if current_substring.substring.startswith('#define'):
+                self.parse_define(current_substring)
+                continue
+            if current_substring.substring.startswith('typedef'):
+                self.parse_typedef(current_substring)
+                continue
+
+            declared_type = current_substring.substring.split()[0]
+            if declared_type in self.function_type_specifier:
+                specifier = declared_type
+                self.parse_function(current_substring, specifier)
+
+        return self.parsed_list
+    def merge_brackets_to_one_line(self):
+        self.list_length = len(self.substring_data)
+
+        while self.index < self.list_length:
+            current_substring = self.substring_data[self.index]
+
+            if '{' not in current_substring.substring:
+                self.index += 1
+                continue
+            if '}' not in current_substring.substring:
+                self.substring_data[self.index].substring += self.substring_data[self.index + 1].substring
+                del self.substring_data[self.index + 1]
+                self.list_length = len(self.substring_data)
+                continue
+            self.index += 1
+            continue
+        self.index = 0
 
     def parse_typedef(self, data):
         split_typedef = data.substring.split(' ')
 
-        if split_typedef[1] == 'struct': # исключение если это структура
+        if split_typedef[1] == 'struct':  # исключение если это структура
             return
 
         typedef = {
-            'type':'typedef',
+            'type': 'typedef',
             'target_type': str(split_typedef[1]),
             'declared_type': str(split_typedef[2]),
-            'index': data.index
-            }
-        
+            'line': data.line
+        }
+
         self.parsed_list.append(typedef)
         print(f'Был найден typedef с параметрами: {typedef}')
 
     def parse_define(self, data):
         split_define = data.substring.split(' ')
 
-        if len(split_define) < 3: # если например #define HEADER_FILE_H
+        if len(split_define) == 2:  # если например #define HEADER_FILE_H
             return
-        
-        if '(' in split_define[1]: # проверка на аргумент, но я бы улучшил её
-            return 
-        
+
+        if '(' in split_define[1]:  # проверка на аргумент, но я бы улучшил её
+            return
+
         define = {
-            'type':'define',
+            'type': 'define',
             'name': str(split_define[1]),
             'value': split_define[2],
-            'index': data.index
+            'line': data.line
         }
 
         self.parsed_list.append(define)
         print(f'Был найден define с параметрами: {define}')
 
     def parse_function(self, data, return_type):
-        split_function = data.substring.split(' ')
+        split_function = data.substring.split()
 
         function = {
             'type': 'function',
             'return': split_function[0],
             'name': split_function[1],
-            'args':[
+            'args': [
                 # нужно разобрать их в скобочках как-то аккуратно
             ],
-            'index': data.index
+            'index': data.line
         }
 
         self.parsed_list.append(function)

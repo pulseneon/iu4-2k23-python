@@ -4,11 +4,11 @@ from dataclasses import dataclass
 @dataclass
 class SubstringData:
     substring: str
-    index: int
+    line: int
 
     @classmethod
-    def from_substring(cls, substring: str, index: int):
+    def from_substring(cls, substring: str, line: int):
         return SubstringData(
             substring,
-            index
+            line
         )
