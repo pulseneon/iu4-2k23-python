@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser, ArgumentError
-from substring_parser import CParser
+from substring_parser import CHeaderView
 from string_to_dataclass import SubstringData
 
 
@@ -32,7 +32,7 @@ def get_file_from_args(filepath: str):
 def main(argv):
     substring_list = get_file_from_args(argv.filepath)
 
-    c_parser = CParser()
+    c_parser = CHeaderView()
     c_parser.parse_from_string_list(substring_list)
 
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -11,4 +12,38 @@ class SubstringData:
         return SubstringData(
             substring,
             line
+        )
+
+
+@dataclass
+class ArgumentData:
+    arg_type: str
+    arg_name: str
+
+    @classmethod
+    def from_dict_args(cls, arg_details: dict):
+        return ArgumentData(
+            arg_details['arg_type'],
+            arg_details['arg_name']
+        )
+
+
+@dataclass
+class ParsedStringData:
+    type: str
+    declared_type: str
+    name: str
+    args: Optional[list[ArgumentData]]
+    value: Optional[int]
+    line: int
+
+    @classmethod
+    def parse_function(cls, string_details: dict):
+        return ParsedStringData(
+            string_details['type'],
+            string_details['declared_type'] if 'declared_type' in string_details else None,
+            string_details['name'],
+            string_details['args'] if 'args' in string_details else None,
+            string_details['value'] if 'value' in string_details else None,
+            string_details['line']
         )

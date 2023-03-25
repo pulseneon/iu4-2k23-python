@@ -1,7 +1,7 @@
-from string_to_dataclass import SubstringData
+from string_to_dataclass import SubstringData, ParsedStringData, ArgumentData
 
 
-class CParser:
+class CHeaderView:
     def __init__(self):
         self.function_type_specifier = ['void',
                                         'char',
@@ -28,6 +28,7 @@ class CParser:
         while self.index < self.list_length:
             current_substring = self.substring_data[self.index]
             self.index += 1
+
             if current_substring.string_value == '' or current_substring.string_value.split()[0] in self.lines_to_skip:
                 continue
             if current_substring.string_value.startswith('#define'):
@@ -35,6 +36,10 @@ class CParser:
                 continue
             if current_substring.string_value.startswith('typedef'):
                 self.parse_typedef(current_substring)
+                continue
+            if current_substring.string_value.startswith('inline'):
+                # self.parse_inline(current_substring)
+                # TODO: бонус1, кому-то надо будет сделать
                 continue
 
             declared_type = current_substring.string_value.split()[0]
@@ -65,15 +70,16 @@ class CParser:
     def parse_typedef(self, data):
         split_typedef = data.string_value.split(' ')
 
-        if split_typedef[1] == 'struct':  # исключение если это структура
+        if split_typedef[1] == 'struct':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
+
             return
 
-        typedef = {
+        typedef = ParsedStringData.parse_function({
             'type': 'typedef',
-            'target_type': str(split_typedef[1]),
-            'declared_type': str(split_typedef[2]),
+            'declared_type': str(split_typedef[1]),
+            'name': str(split_typedef[2]),
             'line': data.line
-        }
+        })
 
         self.parsed_list.append(typedef)
         print(f'Был найден typedef с параметрами: {typedef}')
@@ -87,12 +93,12 @@ class CParser:
         if '(' in split_define[1]:  # проверка на аргумент, но я бы улучшил её
             return
 
-        define = {
+        define = ParsedStringData.parse_function({
             'type': 'define',
             'name': str(split_define[1]),
             'value': split_define[2],
             'line': data.line
-        }
+        })
 
         self.parsed_list.append(define)
         print(f'Был найден define с параметрами: {define}')
@@ -100,25 +106,26 @@ class CParser:
     def parse_function(self, data, return_type):
         split_function = data.string_value.replace('(', ' ').replace(')', ' ').replace(',', ' ')
         split_function = split_function.split()
-        return_value = split_function[0]
         name_value = split_function[1]
         del split_function[0:2]
-        function = {
+        function = ParsedStringData.parse_function({
             'type': return_type,
-            'return': return_value,
             'name': name_value,
-            'args': self.some_func(split_function),
-            'index': data.line
-        }
+            'args': self.split_args(split_function),
+            'line': data.line
+        })
 
         self.parsed_list.append(function)
         print(f'Был найден function с параметрами: {function}')
 
     @staticmethod
-    def some_func(split_function: list[str]):
+    def split_args(split_function: list[str]):
         return_list = []
         while len(split_function) >= 2:
-            return_list.append({'arg_type': split_function[0],
-                                'arg_name': split_function[1]})
+            return_list.append(ArgumentData.from_dict_args(
+                {
+                    'arg_type': split_function[0],
+                    'arg_name': split_function[1]
+                }))
             del split_function[0:2]
         return return_list
