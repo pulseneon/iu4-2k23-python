@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser, ArgumentError
-from substring_parser import CHeaderView
+from c_header_parser import CHeaderView
 from string_to_dataclass import SubstringData
 
 
@@ -35,7 +35,16 @@ def main(argv):
     c_parser = CHeaderView()
     c_parser.parse_from_string_list(substring_list)
 
+    print('\n\n')
+    for x in c_parser.parsed_list:
+        print(x)
+
+    print('\n\n')
+    for x in c_parser.substring_data:
+        print(x)
+
 
 if __name__ == '__main__':
-    input_args = parse_args(sys.argv)
+    sys_argv = sys.argv
+    input_args = parse_args(sys_argv)
     main(input_args)

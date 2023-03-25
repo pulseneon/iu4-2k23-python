@@ -76,7 +76,7 @@ class CHeaderView:
         if split_typedef[1] == 'struct{':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
             self.parse_typedef_struct(data)
             return
-        
+
         if split_typedef[1] == 'struct':
             split_typedef[1] = split_typedef[3]
 
@@ -89,11 +89,11 @@ class CHeaderView:
 
         self.function_type_specifier.append(split_typedef[2])
         self.parsed_list.append(typedef)
-        
+
         print(f'Был найден typedef с параметрами: {typedef}')
 
     def parse_typedef_struct(self, data):
-        split_struct = data.string_value.split(' ')
+        split_struct = data.string_value.split()
 
         split_fields = split_struct[2:]
         split_fields.pop()
@@ -168,16 +168,16 @@ class CHeaderView:
                 }))
             del split_function[0:2]
         return return_list
-    
+
     @staticmethod
     def split_fields(split_struct: list[str]):
         return_list = []
 
         while '' in split_struct:
             split_struct.remove('')
-            
+
         print(split_struct)
-        if (len(split_struct) % 2 != 0): # явно что-то не то надо обработать как-то здесь и в методе split_args скорее всего
+        if len(split_struct) % 2 != 0:  # явно что-то не то надо обработать как-то здесь и в методе split_args скорее всего
             return return_list
 
         while len(split_struct) >= 2:
@@ -187,6 +187,5 @@ class CHeaderView:
                     'arg_name': split_struct[1].replace('}', '')
                 }))
             del split_struct[0:2]
-        
-        return return_list
 
+        return return_list
