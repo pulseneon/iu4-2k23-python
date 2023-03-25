@@ -41,7 +41,7 @@ class CParser:
             if declared_type in self.function_type_specifier:
                 specifier = declared_type
                 self.parse_function(current_substring, specifier)
-
+        self.index = 0
         return self.parsed_list
 
     def merge_brackets_to_one_line(self):
@@ -98,17 +98,27 @@ class CParser:
         print(f'Был найден define с параметрами: {define}')
 
     def parse_function(self, data, return_type):
-        split_function = data.string_value.split()
-
+        split_function = data.string_value.replace('(', ' ').replace(')', ' ').replace(',', ' ')
+        split_function = split_function.split()
+        return_value = split_function[0]
+        name_value = split_function[1]
+        del split_function[0:2]
         function = {
             'type': return_type,
-            'return': split_function[0],
-            'name': split_function[1],
-            'args': [
-                # нужно разобрать их в скобочках как-то аккуратно
-            ],
+            'return': return_value,
+            'name': name_value,
+            'args': self.some_func(split_function),
             'index': data.line
         }
 
         self.parsed_list.append(function)
         print(f'Был найден function с параметрами: {function}')
+
+    @staticmethod
+    def some_func(split_function: list[str]):
+        return_list = []
+        while len(split_function) >= 2:
+            return_list.append({'arg_type': split_function[0],
+                                'arg_name': split_function[1]})
+            del split_function[0:2]
+        return return_list
