@@ -11,7 +11,7 @@ struct User{
 
 typedef struct User User;
 
-typedef struct {
+typedef struct{
     int x;
     int y;
 } Point;

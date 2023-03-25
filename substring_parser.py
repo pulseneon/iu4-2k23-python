@@ -73,9 +73,12 @@ class CHeaderView:
     def parse_typedef(self, data):
         split_typedef = data.string_value.split(' ')
 
-        if split_typedef[1] == 'struct':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
+        if split_typedef[1] == 'struct{':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
             self.parse_typedef_struct(data)
             return
+        
+        if split_typedef[1] == 'struct':
+            split_typedef[1] = split_typedef[3]
 
         typedef = ParsedStringData.parse_function({
             'type': 'typedef',
@@ -90,7 +93,21 @@ class CHeaderView:
         print(f'Был найден typedef с параметрами: {typedef}')
 
     def parse_typedef_struct(self, data):
-        pass
+        split_struct = data.string_value.split(' ')
+
+        split_fields = split_struct[2:]
+        split_fields.pop()
+        name = split_struct[-1]
+
+        typedef_struct = ParsedStringData.parse_function({
+            'type': 'typedef_struct',
+            'name': name,
+            'args': self.split_fields(split_fields),
+            'line': data.line
+        })
+
+        self.parsed_list.append(typedef_struct)
+        print(f'Был найден typedef_struct с параметрами: {typedef_struct}')
 
     def parse_struct(self, data):
         split_struct = data.string_value.split(' ')
@@ -105,8 +122,6 @@ class CHeaderView:
 
         self.parsed_list.append(struct)
         print(f'Был найден struct с параметрами: {struct}')
-
-
 
     def parse_define(self, data):
         split_define = data.string_value.split(' ')
@@ -134,7 +149,7 @@ class CHeaderView:
         del split_function[0:2]
         function = ParsedStringData.parse_function({
             'type': return_type,
-            'name': name_value[-1],
+            'name': name_value,
             'args': self.split_args(split_function),
             'line': data.line
         })
@@ -157,11 +172,12 @@ class CHeaderView:
     @staticmethod
     def split_fields(split_struct: list[str]):
         return_list = []
-        
+
         while '' in split_struct:
             split_struct.remove('')
             
-        if (len(split_struct) % 2 != 0): # явно что-то не то
+        print(split_struct)
+        if (len(split_struct) % 2 != 0): # явно что-то не то надо обработать как-то здесь и в методе split_args скорее всего
             return return_list
 
         while len(split_struct) >= 2:
