@@ -37,5 +37,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    input_arguments = parse_args(sys.argv)
-    main(input_arguments)
+    input_args = parse_args(sys.argv)
+    main(input_args)

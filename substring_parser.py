@@ -28,32 +28,33 @@ class CParser:
         while self.index < self.list_length:
             current_substring = self.substring_data[self.index]
             self.index += 1
-            if current_substring.substring == '' or current_substring.substring.split()[0] in self.lines_to_skip:
+            if current_substring.string_value == '' or current_substring.string_value.split()[0] in self.lines_to_skip:
                 continue
-            if current_substring.substring.startswith('#define'):
+            if current_substring.string_value.startswith('#define'):
                 self.parse_define(current_substring)
                 continue
-            if current_substring.substring.startswith('typedef'):
+            if current_substring.string_value.startswith('typedef'):
                 self.parse_typedef(current_substring)
                 continue
 
-            declared_type = current_substring.substring.split()[0]
+            declared_type = current_substring.string_value.split()[0]
             if declared_type in self.function_type_specifier:
                 specifier = declared_type
                 self.parse_function(current_substring, specifier)
 
         return self.parsed_list
+
     def merge_brackets_to_one_line(self):
         self.list_length = len(self.substring_data)
 
         while self.index < self.list_length:
             current_substring = self.substring_data[self.index]
 
-            if '{' not in current_substring.substring:
+            if '{' not in current_substring.string_value:
                 self.index += 1
                 continue
-            if '}' not in current_substring.substring:
-                self.substring_data[self.index].substring += self.substring_data[self.index + 1].substring
+            if '}' not in current_substring.string_value:
+                self.substring_data[self.index].string_value += self.substring_data[self.index + 1].string_value
                 del self.substring_data[self.index + 1]
                 self.list_length = len(self.substring_data)
                 continue
@@ -62,7 +63,7 @@ class CParser:
         self.index = 0
 
     def parse_typedef(self, data):
-        split_typedef = data.substring.split(' ')
+        split_typedef = data.string_value.split(' ')
 
         if split_typedef[1] == 'struct':  # исключение если это структура
             return
@@ -78,7 +79,7 @@ class CParser:
         print(f'Был найден typedef с параметрами: {typedef}')
 
     def parse_define(self, data):
-        split_define = data.substring.split(' ')
+        split_define = data.string_value.split(' ')
 
         if len(split_define) == 2:  # если например #define HEADER_FILE_H
             return
@@ -97,10 +98,10 @@ class CParser:
         print(f'Был найден define с параметрами: {define}')
 
     def parse_function(self, data, return_type):
-        split_function = data.substring.split()
+        split_function = data.string_value.split()
 
         function = {
-            'type': 'function',
+            'type': return_type,
             'return': split_function[0],
             'name': split_function[1],
             'args': [

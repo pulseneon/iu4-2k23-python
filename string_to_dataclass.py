@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class SubstringData:
-    substring: str
+    string_value: str
     line: int
 
     @classmethod
