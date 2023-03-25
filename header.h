@@ -8,7 +8,7 @@ typedef struct {
     int y;
 } Point;
 
-typedef char string[];
+typedef char[] string;
 
 void print_point(Point p);
 

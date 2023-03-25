@@ -33,7 +33,8 @@ def main(argv):
     substring_list = get_file_from_args(argv.filepath)
     parsed_substrings = header_parser.parse_from_string_list(substring_list)
 
-    print(parsed_substrings)
+    parser = CParser()
+    parser.parse_from_string_list(parsed_substrings)
 
 
 if __name__ == '__main__':
