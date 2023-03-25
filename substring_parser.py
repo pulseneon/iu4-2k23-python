@@ -37,6 +37,9 @@ class CHeaderView:
             if current_substring.string_value.startswith('typedef'):
                 self.parse_typedef(current_substring)
                 continue
+            if current_substring.string_value.startswith('struct'):
+                self.parse_struct(current_substring)
+                continue
             if current_substring.string_value.startswith('inline'):
                 # self.parse_inline(current_substring)
                 # TODO: бонус1, кому-то надо будет сделать
@@ -71,7 +74,7 @@ class CHeaderView:
         split_typedef = data.string_value.split(' ')
 
         if split_typedef[1] == 'struct':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
-
+            self.parse_typedef_struct(data)
             return
 
         typedef = ParsedStringData.parse_function({
@@ -85,6 +88,25 @@ class CHeaderView:
         self.parsed_list.append(typedef)
         
         print(f'Был найден typedef с параметрами: {typedef}')
+
+    def parse_typedef_struct(self, data):
+        pass
+
+    def parse_struct(self, data):
+        split_struct = data.string_value.split(' ')
+        split_fields = split_struct[2:]
+
+        struct = ParsedStringData.parse_function({
+            'type': 'struct',
+            'name': str(split_struct[1].rstrip(split_struct[1][-1])),
+            'args': self.split_fields(split_fields),
+            'line': data.line
+        })
+
+        self.parsed_list.append(struct)
+        print(f'Был найден struct с параметрами: {struct}')
+
+
 
     def parse_define(self, data):
         split_define = data.string_value.split(' ')
@@ -112,7 +134,7 @@ class CHeaderView:
         del split_function[0:2]
         function = ParsedStringData.parse_function({
             'type': return_type,
-            'name': name_value,
+            'name': name_value[-1],
             'args': self.split_args(split_function),
             'line': data.line
         })
@@ -131,3 +153,24 @@ class CHeaderView:
                 }))
             del split_function[0:2]
         return return_list
+    
+    @staticmethod
+    def split_fields(split_struct: list[str]):
+        return_list = []
+        
+        while '' in split_struct:
+            split_struct.remove('')
+            
+        if (len(split_struct) % 2 != 0): # явно что-то не то
+            return return_list
+
+        while len(split_struct) >= 2:
+            return_list.append(ArgumentData.from_dict_args(
+                {
+                    'arg_type': split_struct[0],
+                    'arg_name': split_struct[1]
+                }))
+            del split_struct[0:2]
+
+        return return_list
+
