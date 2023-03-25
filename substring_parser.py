@@ -168,9 +168,9 @@ class CHeaderView:
             return_list.append(ArgumentData.from_dict_args(
                 {
                     'arg_type': split_struct[0],
-                    'arg_name': split_struct[1]
+                    'arg_name': split_struct[1].replace('}', '')
                 }))
             del split_struct[0:2]
-
+        
         return return_list
 
