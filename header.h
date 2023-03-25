@@ -9,10 +9,14 @@ typedef struct {
 } Point;
 
 typedef char[] string;
+typedef int my_int;
 
 void print_point(Point p);
 
 int add(int x, int y);
+
+my_int calc(int a, int b, int c);
+
 
 #define PI 3.14159
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

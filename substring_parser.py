@@ -81,7 +81,9 @@ class CHeaderView:
             'line': data.line
         })
 
+        self.function_type_specifier.append(split_typedef[2])
         self.parsed_list.append(typedef)
+        
         print(f'Был найден typedef с параметрами: {typedef}')
 
     def parse_define(self, data):
