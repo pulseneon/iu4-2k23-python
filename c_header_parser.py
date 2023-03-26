@@ -41,8 +41,7 @@ class CHeaderView:
                 self.parse_struct(current_substring)
                 continue
             if current_substring.string_value.startswith('inline'):
-                # self.parse_inline(current_substring)
-                # TODO: бонус1, кому-то надо будет сделать
+                self.parse_inline(current_substring)
                 continue
 
             declared_type = current_substring.string_value.split()[0]
@@ -73,7 +72,7 @@ class CHeaderView:
     def parse_typedef(self, data):
         split_typedef = data.string_value.split()
 
-        if split_typedef[1] == 'struct{':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
+        if split_typedef[1] == 'struct{':
             self.parse_typedef_struct(data)
             return
 
@@ -123,6 +122,7 @@ class CHeaderView:
         self.parsed_list.append(struct)
         print(f'Был найден struct с параметрами: {struct}')
 
+
     def parse_define(self, data):
         split_define = data.string_value.split(' ')
 
@@ -157,6 +157,22 @@ class CHeaderView:
         self.parsed_list.append(function)
         print(f'Был найден function с параметрами: {function}')
 
+    def parse_inline(self, data):
+        split_inline = data.string_value.split(' ')
+
+        name_value = split_inline[2].split('(')[0]
+        type = split_inline[2].split('(')[1]
+        inline = ParsedStringData.parse_function({
+            'type': 'inline',
+            'declared_type': type,
+            'name': name_value,
+            'args': self.split_expression(split_inline, self.function_type_specifier),
+            'line': data.line
+        })
+
+        self.parsed_list.append(inline)
+        print(f'Был найден inline с параметрами: {inline}')
+
     @staticmethod
     def split_args(split_function: list[str]):
         return_list = []
@@ -176,10 +192,6 @@ class CHeaderView:
         while '' in split_struct:
             split_struct.remove('')
 
-        print(split_struct)
-        if len(split_struct) % 2 != 0:  # явно что-то не то надо обработать как-то здесь и в методе split_args скорее всего
-            return return_list
-
         while len(split_struct) >= 2:
             return_list.append(ArgumentData.from_dict_args(
                 {
@@ -187,5 +199,37 @@ class CHeaderView:
                     'arg_name': split_struct[1].replace('}', '')
                 }))
             del split_struct[0:2]
+
+        return return_list
+    
+    @staticmethod
+    def split_expression(split_struct, function_type_specifier):
+        return_list = []
+
+        while split_struct:
+            if split_struct[0] != '{':
+                del split_struct[0]
+            else:
+                break
+
+        while split_struct:
+            declared_type = split_struct[0]
+            index = 3
+        
+            if declared_type and declared_type != '{':
+                if declared_type in function_type_specifier:
+                    exp = ''
+                    while split_struct and split_struct[0]:
+                        exp += split_struct.pop(0)
+                    return_list.append(ArgumentData.from_dict_args(
+                    {
+                        'arg_type': declared_type,
+                        'arg_name': split_struct[1],
+                        'arg_exp': exp
+                    }))
+                    
+                del split_struct[:2]
+            else:
+                del split_struct[0]
 
         return return_list

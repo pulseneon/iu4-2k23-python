@@ -19,12 +19,14 @@ class SubstringData:
 class ArgumentData:
     arg_type: str
     arg_name: str
+    arg_exp: str
 
     @classmethod
     def from_dict_args(cls, arg_details: dict):
         return ArgumentData(
             arg_details['arg_type'],
-            arg_details['arg_name']
+            arg_details['arg_name'],
+            arg_details['arg_exp'] if 'arg_exp' in arg_details else None
         )
 
 

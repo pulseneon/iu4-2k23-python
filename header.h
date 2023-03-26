@@ -27,6 +27,10 @@ my_int calc(int a, int b, int c);
 
 User addUser(string name, int pass);
 
+inline int add(int x, int y) {
+    int result = x + y;
+    return result;
+}
 
 #define PI 3.14159
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
