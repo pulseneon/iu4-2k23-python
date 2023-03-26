@@ -18,15 +18,15 @@ class CHeaderView:
         self.lines_to_skip = ['#ifndef', '#include', '#endif']
         self.index = 0
         self.list_length = 0
-        self.substring_data = []
+        self.original_substring_data = []
         self.parsed_list = []
 
     def parse_from_string_list(self, substring_data: list[SubstringData]):
-        self.substring_data = substring_data
+        self.original_substring_data = substring_data
         self.merge_brackets_to_one_line()
 
         while self.index < self.list_length:
-            current_substring = self.substring_data[self.index]
+            current_substring = self.original_substring_data[self.index]
             self.index += 1
 
             if current_substring.string_value == '' or current_substring.string_value.split()[0] in self.lines_to_skip:
@@ -53,25 +53,25 @@ class CHeaderView:
         return self.parsed_list
 
     def merge_brackets_to_one_line(self):
-        self.list_length = len(self.substring_data)
+        self.list_length = len(self.original_substring_data)
 
         while self.index < self.list_length:
-            current_substring = self.substring_data[self.index]
+            current_substring = self.original_substring_data[self.index]
 
             if '{' not in current_substring.string_value:
                 self.index += 1
                 continue
             if '}' not in current_substring.string_value:
-                self.substring_data[self.index].string_value += self.substring_data[self.index + 1].string_value
-                del self.substring_data[self.index + 1]
-                self.list_length = len(self.substring_data)
+                self.original_substring_data[self.index].string_value += self.original_substring_data[self.index + 1].string_value
+                del self.original_substring_data[self.index + 1]
+                self.list_length = len(self.original_substring_data)
                 continue
             self.index += 1
             continue
         self.index = 0
 
     def parse_typedef(self, data):
-        split_typedef = data.string_value.split(' ')
+        split_typedef = data.string_value.split()
 
         if split_typedef[1] == 'struct{':  # TODO: если структура, то это бонус2. Костя, нужно будет реализовать её
             self.parse_typedef_struct(data)

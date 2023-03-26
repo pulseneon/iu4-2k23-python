@@ -40,7 +40,7 @@ def main(argv):
         print(x)
 
     print('\n\n')
-    for x in c_parser.substring_data:
+    for x in c_parser.original_substring_data:
         print(x)
 
 
