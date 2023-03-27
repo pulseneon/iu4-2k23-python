@@ -11,6 +11,9 @@ struct User{
 
 typedef struct User User;
 
+int age = 17;
+extern double size;
+
 typedef struct {
     int x;
     int y;

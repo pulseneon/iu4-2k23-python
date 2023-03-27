@@ -40,6 +40,9 @@ class CHeaderView:
             if current_substring.string_value.startswith('struct'):
                 self.parse_struct(current_substring)
                 continue
+            if current_substring.string_value.startswith('extern'):
+                self.parse_extern(current_substring)
+                continue
             if current_substring.string_value.startswith('inline'):
                 self.parse_inline(current_substring)
                 continue
@@ -143,6 +146,10 @@ class CHeaderView:
         print(f'Был найден define с параметрами: {define}')
 
     def parse_function(self, data, return_type):
+        if len(data.string_value.split()) < 5 and '(' not in data.string_value:
+            self.parse_global_value(data)
+            return
+
         split_function = data.string_value.replace('(', ' ').replace(')', ' ').replace(',', ' ')
         split_function = split_function.split()
         name_value = split_function[1]
@@ -172,6 +179,31 @@ class CHeaderView:
 
         self.parsed_list.append(inline)
         print(f'Был найден inline с параметрами: {inline}')
+
+    def parse_extern(self, data):
+        split_extern = data.string_value.split()
+        extern = ParsedStringData.parse_function({
+            'type': 'global_value', # жук, я не уверен как его помечать, но скорее всего это просто объявление глобальной переменной
+            'declared_type': split_extern[1],
+            'name': split_extern[2],
+            'line': data.line    
+        })
+
+        self.parsed_list.append(extern)
+        print(f'Был найден global_value с параметрами: {extern}')
+
+    def parse_global_value(self, data):
+        split_value = data.string_value.split()
+        global_value = ParsedStringData.parse_function({
+            'type': 'global_value',
+            'declared_type': split_value[0],
+            'name': split_value[1],
+            'value': split_value[3],
+            'line': data.line
+        })
+
+        self.parsed_list.append(global_value)
+        print(f'Был найден global_value с параметрами: {global_value}')
 
     @staticmethod
     def split_args(split_function: list[str]):
